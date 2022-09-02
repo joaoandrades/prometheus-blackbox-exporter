@@ -76,6 +76,7 @@ kubectl port-forward --namespace monitoring svc/kube-stack-prometheus-grafana 80
 Só ir no navegador e acessar http://localhost:8080
 
 Usuário: admin
+
 Senha: prom-operator
 
 ## Prometheus blackbox-exporter
@@ -111,6 +112,7 @@ kubectl port-forward --namespace monitoring svc/kube-stack-prometheus-grafana 80
 Só ir no navegador e acessar http://localhost:8080
 
 Usuário: admin
+
 Senha: prom-operator
 
 Ir na parte de Dashboards > Import e inserir o código do dashboard que é: **7587**.

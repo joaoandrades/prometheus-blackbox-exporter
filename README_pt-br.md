@@ -1,41 +1,42 @@
-# How to deploy blackbox-exporter on kubernetes
+# Como realizar deploy do blackbox-exporter no kubernetes
 
-The purpose of this doc is to deploy prometheus **blackbox-exporter** in a kubernetes cluster in a simple and easy way.
+O objetivo dessa doc é realizar o deploy do prometheus **blackbox-exporter** em um cluster kubernetes de uma maneira simples e fácil.
 
-# Requirements
+# Pre-requisitos
 
  - docker
  - minikube
  - kubectl
  - helm
 
-## Preparing the environment
+## Preparando o ambiente
 
-First you need to create a cluster in minikube:
+Primeiro é necessário criar um cluster no minikube:
 
 `minikube start --cpus 8 --memory 12384mb --disk-size='200000mb' --nodes 1`
 
-> Note: The amount of memory and cpus depends on your computer's resource.
+> Observação: a quantidade de memória e cpus vai de acordo com o recurso
+> do seu computador.
 
-Creating the monitoring namespace:
+Criando o namespace monitoring:
 
 `kubectl create namespace monitoring`
 
-Installing the kube-prometheus-stack with Helm:
+Instalando a stack kube-prometheus-stack com Helm:
 
- 1. Adding helm repository from stack
+ 1. Adicionando o repositório helm da stack
 
 ```console
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 ```
 
- 2. Updating the repository
+ 2. Atualizando o repositório
 
 `helm repo update`
 
- 3. Deploying the stack
+ 3. Realizando deploy da stack
 
-For this deployment, the stack values were modified by adding the following block:
+Para esse deploy o values da stack foi modificado adicionando o seguinte bloco:
 
 ```yaml
     additionalScrapeConfigs:
@@ -54,33 +55,33 @@ For this deployment, the stack values were modified by adding the following bloc
         - target_label: __address__
           replacement: prometheus-blackbox-exporter.monitoring:9115
 ```
-The yaml file that is in the **kube-stack-prometheus** directory of this repository.
+O arquivo yaml que tá no diretório **kube-stack-prometheus** deste repositório.
 ```
 helm upgrade --install kube-stack-prometheus prometheus-community/kube-prometheus-stack -f kube-stack-prometheus/values.yaml -n monitoring
 ```
-It is important, after deploying, to verify that the pods are OK (with running status):
+É importante, após o deploy, verificar se os pods estão OK (com status running):
 
 `kubectl get pods -n monitoring`
 
- 4. Accessing the prometheus interface
+ 4. Acessando a interface do prometheus
 ```
 kubectl port-forward --namespace monitoring svc/kube-stack-prometheus-kube-prometheus 9090:9090
 ```
-Just go to the browser and access: http://localhost:9090
+Só ir no navegador e acessar http://localhost:9090
  
- 5. Accessing Grafana
+ 5. Acessando o Grafana
 ```
 kubectl port-forward --namespace monitoring svc/kube-stack-prometheus-grafana 8080:80
 ```
-Just go to the browser and access: http://localhost:8080
+Só ir no navegador e acessar http://localhost:8080
 
-User: admin
+Usuário: admin
 
-Pass: prom-operator
+Senha: prom-operator
 
 ## Prometheus blackbox-exporter
 
-Before deploying blackbox-exporter it is necessary to make some changes to *values.yaml*. Just as the stack's *values.yaml* was modified, the blackbox one also has some modifications:
+Antes de realizar o deploy do blackbox-exporter é necessário realizar algumas alterações no *values.yaml*. Assim como o *values.yaml* da stack foi modificado o do blackbox também está com algumas modifições:
 
 ```yaml
 config:
@@ -97,25 +98,25 @@ config:
         preferred_ip_protocol: "ip4"
 ```
 
-> Remembering that it is possible to configure/modify the values according to your needs.
+> Lembrando que é possível configurar/modificar os values de acordo com a suas necessidades.
 
  - Deploy
 ```console
 helm install prometheus-blackbox-exporter prometheus-community/prometheus-blackbox-exporter -f blackbox-exporter/values.yaml -n monitoring
 ```
 
-After the deployment is done, it is interesting to visualize the metrics on a dashboard, for that we will access Grafana again:
+Depois do deploy feito é interessante visualizar as métricas em um dashboard, para isso vamos acessar o Grafana novamente:
 ```
 kubectl port-forward --namespace monitoring svc/kube-stack-prometheus-grafana 8080:80
 ```
-Just go to the browser and access: http://localhost:8080
+Só ir no navegador e acessar http://localhost:8080
 
-User: admin
+Usuário: admin
 
-Pass: prom-operator
+Senha: prom-operator
 
-Go to Dashboards > Import and insert the dashboard code which is: **7587**.
+Ir na parte de Dashboards > Import e inserir o código do dashboard que é: **7587**.
 
-Finally, the end result is this:
+Por fim o resultado final é este:
 
 ![Dashboard](./dashboard/dash-blackbox.png)
